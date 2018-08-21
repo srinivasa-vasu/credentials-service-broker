@@ -1,0 +1,7 @@
+---
+applications:
+- name: credhub-sb
+  memory: 1G
+  path: build/libs/credential-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+  env:
+      SPRING_CREDHUB_URL: https://credhub.service.cf.internal:8844
