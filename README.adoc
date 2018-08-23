@@ -7,7 +7,7 @@
 
 == Overview
 
-This project https://github.com/srinivasa-vasu/credentials-service-broker.git[credhub-broker] uses Spring Cloud - Cloud Foundry Service Broker to implement a fully functional cloud native credentials management as a service. This is a sample broker service that persists service and binding details in-memory.
+This project https://github.com/srinivasa-vasu/credentials-service-broker.git[credential-service-broker] uses Spring Cloud - Cloud Foundry Service Broker to implement a fully functional cloud native credentials management as a service. This is a sample broker service that persists service and binding details in-memory.
 
 This spring boot project is based on https://github.com/spring-cloud/spring-cloud-open-service-broker/tree/2.0.x[Spring Cloud - Cloud Foundry Service Broker 2.x]
 
@@ -82,7 +82,7 @@ IMPORTANT: Note down the route url
 
 * Create broker
 ```
-cf create-service-broker credhub-broker admin admin <url> --space-scoped
+cf create-service-broker credential-service-broker admin admin <url> --space-scoped
 ```
 Replace `<url>` with the route url from `cf push` step
 
@@ -110,7 +110,7 @@ Status should be successful, if the given properties are correct
 
 === Bind :: Service
 
-Push https://github.com/srinivasa-vasu/credentials-service-client.git[credhub-client] to the same space by binding the credhub service instance
+Push https://github.com/srinivasa-vasu/credentials-service-client.git[credential-service-client] to the same space by binding the credhub service instance
 
 * Update credentials-service-client manifest to include the bind-service entry
 ```
