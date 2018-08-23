@@ -1,0 +1,132 @@
+:toc: right
+:toc-title: Contents
+
+:icons: font
+
+= Spring Boot Credhub Service Broker
+
+== Overview
+
+This project https://github.com/srinivasa-vasu/credentials-service-broker.git[credhub-broker] uses Spring Cloud - Cloud Foundry Service Broker to implement a fully functional cloud native credentials management as a service. This is a sample broker service that persists service and binding details in-memory.
+
+This spring boot project is based on https://github.com/spring-cloud/spring-cloud-open-service-broker/tree/2.0.x[Spring Cloud - Cloud Foundry Service Broker 2.x]
+
+== Prereqs
+
+Running PCF foundation or an active account in https://run.pivotal.io[PWS]
+
+== Getting Started
+
+This service broker's `create service instance` call will configure credhub credential management service. Credentials created/managed by this service broker will be persisted in platform's application runtime's integrated credhub service.
+
+NOTE: Credhub supports two authentication methods: mTLS and oAuth2.
+
+=== Configure :: A&A
+
+Based on the properties that you specify in application.yml/manifest.yml, one of the authentication methods will be leveraged.
+
+* manifest.yml
+```
+env:
+    SPRING_CREDHUB_URL: https://credhub.service.cf.internal:8844
+```
+If you specify only the SPRING_CREDHUB_URL, then mTLS will be used
+
+```
+env:
+    SPRING_CREDHUB_URL: https://credhub.service.cf.internal:8844
+    SPRING_CREDHUB_OAUTH2_CLIENT_ID: clientid
+    SPRING_CREDHUB_OAUTH2_CLIENT_SECRET: clientsecret
+    SPRING_CREDHUB_OAUTH2_ACCESS_TOKEN_URI: https://uaa.sys.pcf.com/oauth/token
+```
+If you specify all 4 aforementioned properties, then oAuth2 will be used.
+
+NOTE: You can specify the same set of properties in application.yml as well
+
+=== Build :: Broker App
+* Build it
+```
+./gradlew -x test clean build
+```
+After building, you have to push the broker app to Cloud Foundry
+
+=== Push :: Broker App
+
+* Login to cloud foundry
+```
+cf login -a <login_api_endpoint>
+```
+* Better to target `system` organization
+```
+cf target -o <org> -s <space>
+```
+* Update manifest info (manifest.yml) to activate either mTLS or oAuth2 based on the needed properties info
+```
+applications:
+- name: credhub-sb
+  memory: 756M
+  instances: 1
+  path: build/libs/credential-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+  env:
+      SPRING_CREDHUB_URL: https://credhub.service.cf.internal:8844
+  #    SPRING_CREDHUB_OAUTH2_CLIENT_ID: <client_id>
+  #    SPRING_CREDHUB_OAUTH2_CLIENT_SECRET: <client_secret>
+  #    SPRING_CREDHUB_OAUTH2_ACCESS_TOKEN_URI: https://uaa.sys.pcf.com/oauth/token
+
+```
+* cf push
+
+IMPORTANT: Note down the route url
+
+=== Create :: Service Broker
+
+* Create broker
+```
+cf create-service-broker credhub-broker admin admin <url> --space-scoped
+```
+Replace `<url>` with the route url from `cf push` step
+
+* List brokers
+```
+cf service-brokers
+```
+
+TIP: You should be able to see the `credhub` service broker
+
+=== Create :: Service
+
+* Create credhub service
+```
+cf create-service credentialstore standard credhub-svc
+```
+
+`create-service` will configure the service with platform's integrated credhub
+
+* Check service creation status
+```
+cf service credhub-svc
+```
+Status should be successful, if the given properties are correct
+
+=== Bind :: Service
+
+Push https://github.com/srinivasa-vasu/credentials-service-client.git[credhub-client] to the same space by binding the credhub service instance
+
+* Update spring-music manifest to include the bind-service entry
+```
+applications:
+- name: credentials-service-client
+  memory: 1G
+  path: target/credentials-service-client-0.0.1-SNAPSHOT.jar
+  services:
+  - credhub-svc
+```
+* Push the app to the same space
+```
+cf push
+```
+TIP: Verify the results in a web browser
+
+
+
+
