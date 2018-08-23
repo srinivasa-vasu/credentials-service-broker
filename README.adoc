@@ -112,7 +112,7 @@ Status should be successful, if the given properties are correct
 
 Push https://github.com/srinivasa-vasu/credentials-service-client.git[credhub-client] to the same space by binding the credhub service instance
 
-* Update spring-music manifest to include the bind-service entry
+* Update credhub-client manifest to include the bind-service entry
 ```
 applications:
 - name: credentials-service-client
